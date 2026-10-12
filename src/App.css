@@ -426,6 +426,28 @@ body {
   max-width: 300px;
 }
 
+/* Блок освобождённых фото */
+.pair.free-pair {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px dashed rgba(255, 255, 255, 0.3);
+}
+
+.free-content {
+  gap: 12px;
+}
+
+.free-content .photo-card {
+  width: 120px;
+  height: 120px;
+}
+
+@media (max-width: 380px) {
+  .free-content .photo-card {
+    width: 90px;
+    height: 90px;
+  }
+}
+
 /* Mobile styles */
 @media (max-width: 380px) {
   .app-header {

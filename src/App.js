@@ -1,18 +1,16 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import './App.css';
 
 const App = () => {
   const [photos, setPhotos] = useState([]);
-  const [tournamentPhotos, setTournamentPhotos] = useState([]);
   const [currentRound, setCurrentRound] = useState([]);
-  const [winners, setWinners] = useState([]);
+  const [roundNumber, setRoundNumber] = useState(1);
   const [finalWinner, setFinalWinner] = useState(null);
-  const [stage, setStage] = useState('upload'); // upload, tournament, finished
+  const [stage, setStage] = useState('upload');
 
   // Загрузка фотографий
   const handleFileUpload = (e) => {
     const files = Array.from(e.target.files);
-    
     files.forEach(file => {
       const reader = new FileReader();
       reader.onload = (event) => {
@@ -26,7 +24,7 @@ const App = () => {
     });
   };
 
-  // Перемешивание массива
+  // Перемешивание
   const shuffleArray = (array) => {
     const shuffled = [...array];
     for (let i = shuffled.length - 1; i > 0; i--) {
@@ -36,150 +34,139 @@ const App = () => {
     return shuffled;
   };
 
-  // Начало турнира
+  // Ближайшая степень двойки сверху
+  const nextPowerOfTwo = (n) => {
+    let p = 1;
+    while (p < n) p *= 2;
+    return p;
+  };
+
+  // Разбить массив фото на раунд: вернёт { pairs, freePhotos }
+  const buildRound = (photoList, isFirstRound) => {
+    const shuffled = shuffleArray(photoList);
+    const pairs = [];
+    let freePhotos = [];
+
+    if (isFirstRound) {
+      // В первом раунде освобождаем столько, чтобы оставшиеся + освобождённые
+      // в след. раунде дали степень двойки
+      const N = shuffled.length;
+      const target = nextPowerOfTwo(N); // ближайшая степень 2 сверху
+      const freeCount = target - N;
+      
+      const working = [...shuffled];
+      // Освобождаем freeCount случайных фото
+      freePhotos = working.splice(0, freeCount);
+      
+      // Остальные разбиваем на пары
+      while (working.length >= 2) {
+        const photo1 = working.pop();
+        const photo2 = working.pop();
+        pairs.push({
+          id: `${Date.now()}-${Math.random()}`,
+          photo1,
+          photo2,
+          winner: null,
+        });
+      }
+    } else {
+      // В последующих раундах всё чётное, освобождённых нет
+      const working = [...shuffled];
+      while (working.length >= 2) {
+        const photo1 = working.pop();
+        const photo2 = working.pop();
+        pairs.push({
+          id: `${Date.now()}-${Math.random()}`,
+          photo1,
+          photo2,
+          winner: null,
+        });
+      }
+    }
+
+    return { pairs, freePhotos };
+  };
+
   const startTournament = () => {
     if (photos.length < 2) {
-      alert('Нужно минимум 2 фотографии для турнира!');
+      alert('Нужно минимум 2 фотографии!');
       return;
     }
-    
-    const shuffled = shuffleArray(photos);
-    setTournamentPhotos(shuffled);
-    
-    // Разбиваем на пары
-    const pairs = [];
-    const workingPhotos = [...shuffled];
-    
-    while (workingPhotos.length >= 2) {
-      const photo1 = workingPhotos.pop();
-      const photo2 = workingPhotos.pop();
-      pairs.push({
-        id: `${Date.now()}-${Math.random()}`,
-        photo1,
-        photo2,
-        winner: null
-      });
-    }
-    
-    // Если осталась одна фотография - делаем её "свободной"
-    if (workingPhotos.length === 1) {
-      pairs.push({
-        id: `${Date.now()}-${Math.random()}`,
-        photo1: workingPhotos[0],
-        photo2: null,
-        winner: null,
-        isFree: true
-      });
-    }
-    
-    setCurrentRound(pairs);
+    const { pairs, freePhotos } = buildRound(photos, true);
+    setCurrentRound({ pairs, freePhotos });
+    setRoundNumber(1);
     setStage('tournament');
-    setWinners([]);
     setFinalWinner(null);
   };
 
-  // Выбор победителя в паре
   const selectWinner = (pairId, winnerPhoto) => {
-    setCurrentRound(prev => 
-      prev.map(pair => 
-        pair.id === pairId 
-          ? { ...pair, winner: winnerPhoto }
-          : pair
-      )
-    );
+    setCurrentRound(prev => ({
+      ...prev,
+      pairs: prev.pairs.map(pair =>
+        pair.id === pairId ? { ...pair, winner: winnerPhoto } : pair
+      ),
+    }));
   };
 
-  // Переход к следующему раунду
   const nextRound = () => {
+    const { pairs, freePhotos } = currentRound;
+
     const roundWinners = [];
-    
-    currentRound.forEach(pair => {
-      if (pair.isFree) {
-        // Свободная фотография проходит дальше
-        roundWinners.push(pair.photo1);
-      } else if (pair.winner) {
-        roundWinners.push(pair.winner);
-      }
+    pairs.forEach(pair => {
+      if (pair.winner) roundWinners.push(pair.winner);
     });
-    
-    if (roundWinners.length === 0) {
-      alert('Выберите победителей во всех парах!');
-      return;
-    }
-    
-    if (roundWinners.length === 1) {
-      // У нас есть победитель!
-      setFinalWinner(roundWinners[0]);
+
+    // Добавляем освобождённых (только в первом раунде)
+    const allAdvancing = [...roundWinners, ...freePhotos];
+
+    if (allAdvancing.length === 1) {
+      setFinalWinner(allAdvancing[0]);
       setStage('finished');
       return;
     }
-    
-    // Формируем новый раунд
-    const shuffled = shuffleArray(roundWinners);
-    const pairs = [];
-    const workingPhotos = [...shuffled];
-    
-    while (workingPhotos.length >= 2) {
-      const photo1 = workingPhotos.pop();
-      const photo2 = workingPhotos.pop();
-      pairs.push({
-        id: `${Date.now()}-${Math.random()}`,
-        photo1,
-        photo2,
-        winner: null
-      });
-    }
-    
-    if (workingPhotos.length === 1) {
-      pairs.push({
-        id: `${Date.now()}-${Math.random()}`,
-        photo1: workingPhotos[0],
-        photo2: null,
-        winner: null,
-        isFree: true
-      });
-    }
-    
-    setCurrentRound(pairs);
-    setWinners(prev => [...prev, ...roundWinners]);
+
+    const { pairs: newPairs, freePhotos: newFree } = buildRound(allAdvancing, false);
+
+    // Проверка: если после разбивки остался кто-то лишний (нечёт) — добавляем в free
+    // (по логике не должно случиться, но на всякий)
+    setCurrentRound({ pairs: newPairs, freePhotos: newFree });
+    setRoundNumber(prev => prev + 1);
   };
 
-  // Сброс турнира
   const resetTournament = () => {
     setPhotos([]);
-    setTournamentPhotos([]);
     setCurrentRound([]);
-    setWinners([]);
+    setRoundNumber(1);
     setFinalWinner(null);
     setStage('upload');
   };
 
-  // Удаление фотографии из загрузки
   const removePhoto = (id) => {
-    setPhotos(prev => prev.filter(photo => photo.id !== id));
+    setPhotos(prev => prev.filter(p => p.id !== id));
   };
 
-  // Проверка, все ли пары имеют победителей
-  const allPairsHaveWinners = currentRound.every(pair => 
-    pair.isFree || pair.winner !== null
-  );
+  const { pairs = [], freePhotos = [] } = currentRound;
+  const allPairsHaveWinners = pairs.length > 0 && pairs.every(p => p.winner !== null);
 
-  // Компонент карточки фотографии
-  const PhotoCard = ({ photo, onSelect, isSelected, showPlusButton, isFree }) => (
+  // Сколько фото в этом раунде
+  const totalInRound = pairs.length * 2 + freePhotos.length;
+  const isFinalRound = totalInRound === 2;
+
+  // Компонент карточки
+  const PhotoCard = ({ photo, onSelect, isSelected, isFree }) => (
     <div className={`photo-card ${isFree ? 'free' : ''} ${isSelected ? 'selected' : ''}`}>
       <div className="photo-wrapper">
         <img src={photo.url} alt={photo.name} />
-        {isFree && <div className="free-overlay">Свободна</div>}
       </div>
-      {showPlusButton && !isFree && (
-        <button 
+      {!isFree && (
+        <button
           className="select-button"
           onClick={() => onSelect(photo)}
           aria-label="Выбрать победителя"
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
           </svg>
         </button>
       )}
@@ -201,18 +188,12 @@ const App = () => {
         {stage === 'upload' && (
           <div className="upload-stage">
             <label className="upload-zone">
-              <input
-                type="file"
-                multiple
-                accept="image/*"
-                onChange={handleFileUpload}
-                className="file-input"
-              />
+              <input type="file" multiple accept="image/*" onChange={handleFileUpload} className="file-input" />
               <div className="upload-content">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                  <polyline points="17 8 12 3 7 8"></polyline>
-                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="17 8 12 3 7 8" />
+                  <line x1="12" y1="3" x2="12" y2="15" />
                 </svg>
                 <p>Нажмите или перетащите фотографии</p>
                 <span>Можно выбрать сразу несколько</span>
@@ -226,20 +207,11 @@ const App = () => {
                   {photos.map(photo => (
                     <div key={photo.id} className="uploaded-photo">
                       <img src={photo.url} alt={photo.name} />
-                      <button 
-                        className="remove-button"
-                        onClick={() => removePhoto(photo.id)}
-                      >
-                        ×
-                      </button>
+                      <button className="remove-button" onClick={() => removePhoto(photo.id)}>×</button>
                     </div>
                   ))}
                 </div>
-                <button 
-                  className="start-button"
-                  onClick={startTournament}
-                  disabled={photos.length < 2}
-                >
+                <button className="start-button" onClick={startTournament} disabled={photos.length < 2}>
                   Начать турнир
                 </button>
               </div>
@@ -250,12 +222,12 @@ const App = () => {
         {stage === 'tournament' && (
           <div className="tournament-stage">
             <div className="round-info">
-              <h2>Раунд {winners.length / 2 + 1}</h2>
+              <h2>Раунд {roundNumber}</h2>
               <p>Выберите победителя в каждой паре</p>
             </div>
 
             <div className="pairs-container">
-              {currentRound.map((pair, index) => (
+              {pairs.map((pair, index) => (
                 <div key={pair.id} className="pair">
                   <div className="pair-number">Пара {index + 1}</div>
                   <div className="pair-content">
@@ -263,34 +235,35 @@ const App = () => {
                       photo={pair.photo1}
                       onSelect={(photo) => selectWinner(pair.id, photo)}
                       isSelected={pair.winner?.id === pair.photo1.id}
-                      showPlusButton={true}
-                      isFree={pair.isFree}
+                      isFree={false}
                     />
-                    {pair.photo2 && (
-                      <>
-                        <div className="vs">VS</div>
-                        <PhotoCard
-                          photo={pair.photo2}
-                          onSelect={(photo) => selectWinner(pair.id, photo)}
-                          isSelected={pair.winner?.id === pair.photo2.id}
-                          showPlusButton={true}
-                          isFree={false}
-                        />
-                      </>
-                    )}
+                    <div className="vs">VS</div>
+                    <PhotoCard
+                      photo={pair.photo2}
+                      onSelect={(photo) => selectWinner(pair.id, photo)}
+                      isSelected={pair.winner?.id === pair.photo2.id}
+                      isFree={false}
+                    />
                   </div>
                 </div>
               ))}
+
+              {freePhotos.length > 0 && (
+                <div className="pair free-pair">
+                  <div className="pair-number">
+                    🎫 Освобождены от игры (пройдут автоматически)
+                  </div>
+                  <div className="pair-content free-content">
+                    {freePhotos.map(photo => (
+                      <PhotoCard key={photo.id} photo={photo} isFree={true} />
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
-            <button 
-              className="next-round-button"
-              onClick={nextRound}
-              disabled={!allPairsHaveWinners}
-            >
-              {currentRound.filter(p => !p.isFree).length === 1 && currentRound.filter(p => p.winner).length === 1
-                ? 'Показать победителя'
-                : 'Следующий раунд'}
+            <button className="next-round-button" onClick={nextRound} disabled={!allPairsHaveWinners}>
+              {isFinalRound ? 'Показать победителя' : 'Следующий раунд'}
             </button>
           </div>
         )}
