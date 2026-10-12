@@ -1,0 +1,546 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  color: #333;
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.app-header h1 {
+  font-size: 1.8rem;
+  color: white;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.reset-button {
+  padding: 10px 20px;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #764ba2;
+  transition: all 0.3s ease;
+}
+
+.reset-button:hover {
+  background: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.reset-button.large {
+  padding: 15px 40px;
+  font-size: 1.1rem;
+  margin-top: 30px;
+}
+
+.app-main {
+  flex: 1;
+  padding: 30px 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Upload Stage */
+.upload-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+}
+
+.upload-zone {
+  width: 100%;
+  max-width: 600px;
+  border: 3px dashed rgba(255, 255, 255, 0.5);
+  border-radius: 20px;
+  padding: 60px 30px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.upload-zone:hover {
+  border-color: white;
+  background: rgba(255, 255, 255, 0.15);
+  transform: scale(1.02);
+}
+
+.file-input {
+  display: none;
+}
+
+.upload-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  color: white;
+  text-align: center;
+}
+
+.upload-content svg {
+  opacity: 0.8;
+}
+
+.upload-content p {
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.upload-content span {
+  font-size: 0.95rem;
+  opacity: 0.8;
+}
+
+.uploaded-photos {
+  width: 100%;
+  max-width: 900px;
+}
+
+.uploaded-photos h2 {
+  color: white;
+  margin-bottom: 20px;
+  text-align: center;
+  font-size: 1.4rem;
+}
+
+.photos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.uploaded-photo {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.uploaded-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.remove-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(255, 59, 48, 0.9);
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.remove-button:hover {
+  background: #ff3b30;
+  transform: scale(1.1);
+}
+
+.start-button {
+  display: block;
+  margin: 0 auto;
+  padding: 18px 50px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 20px rgba(245, 87, 108, 0.4);
+}
+
+.start-button:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(245, 87, 108, 0.5);
+}
+
+.start-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Tournament Stage */
+.tournament-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.round-info {
+  text-align: center;
+  color: white;
+}
+
+.round-info h2 {
+  font-size: 2rem;
+  margin-bottom: 8px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.round-info p {
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+.pairs-container {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.pair {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.pair-number {
+  color: white;
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.pair-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.vs {
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 900;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.photo-card {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.photo-card.free {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.photo-card.selected {
+  box-shadow: 0 0 0 4px #4ade80, 0 8px 25px rgba(74, 222, 128, 0.4);
+  transform: scale(1.05);
+}
+
+.photo-wrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.photo-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.free-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.select-button {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4);
+  transition: all 0.3s ease;
+}
+
+.select-button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(34, 197, 94, 0.6);
+}
+
+.next-round-button {
+  display: block;
+  margin: 0 auto;
+  padding: 18px 50px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.next-round-button:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+}
+
+.next-round-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Finished Stage */
+.finished-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+}
+
+.winner-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.trophy {
+  font-size: 5rem;
+  animation: bounce 1s ease infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+}
+
+.winner-display h2 {
+  color: white;
+  font-size: 2.5rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.winner-photo {
+  position: relative;
+  width: 300px;
+  height: 300px;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 0 0 6px #fbbf24, 0 15px 40px rgba(0, 0, 0, 0.3);
+  animation: glow 2s ease infinite;
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 0 6px #fbbf24, 0 15px 40px rgba(251, 191, 36, 0.4); }
+  50% { box-shadow: 0 0 0 6px #fbbf24, 0 15px 40px rgba(251, 191, 36, 0.8); }
+}
+
+.winner-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.winner-crown {
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 3rem;
+}
+
+.winner-name {
+  color: white;
+  font-size: 1.3rem;
+  font-weight: 600;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+  word-break: break-all;
+  max-width: 300px;
+}
+
+/* Mobile styles */
+@media (max-width: 380px) {
+  .app-header {
+    padding: 15px;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .app-header h1 {
+    font-size: 1.4rem;
+  }
+
+  .reset-button {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+  }
+
+  .app-main {
+    padding: 15px 10px;
+  }
+
+  .upload-zone {
+    padding: 40px 20px;
+  }
+
+  .upload-content p {
+    font-size: 1.1rem;
+  }
+
+  .upload-content span {
+    font-size: 0.85rem;
+  }
+
+  .uploaded-photos h2 {
+    font-size: 1.2rem;
+  }
+
+  .photos-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .start-button {
+    padding: 15px 30px;
+    font-size: 1rem;
+  }
+
+  .round-info h2 {
+    font-size: 1.5rem;
+  }
+
+  .round-info p {
+    font-size: 0.95rem;
+  }
+
+  .pair {
+    padding: 15px 10px;
+    border-radius: 15px;
+  }
+
+  .pair-content {
+    gap: 10px;
+  }
+
+  .photo-card {
+    width: 140px;
+    height: 140px;
+    border-radius: 12px;
+  }
+
+  .vs {
+    font-size: 1.1rem;
+  }
+
+  .select-button {
+    width: 35px;
+    height: 35px;
+    bottom: 8px;
+    right: 8px;
+  }
+
+  .select-button svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .next-round-button {
+    padding: 15px 30px;
+    font-size: 1rem;
+  }
+
+  .trophy {
+    font-size: 3.5rem;
+  }
+
+  .winner-display h2 {
+    font-size: 1.8rem;
+  }
+
+  .winner-photo {
+    width: 220px;
+    height: 220px;
+  }
+
+  .winner-crown {
+    font-size: 2.2rem;
+    top: -15px;
+  }
+
+  .winner-name {
+    font-size: 1.1rem;
+  }
+
+  .reset-button.large {
+    padding: 12px 30px;
+    font-size: 1rem;
+  }
+}
